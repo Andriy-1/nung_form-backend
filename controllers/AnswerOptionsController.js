@@ -1,0 +1,178 @@
+import db from '../db/connect.js';
+
+const SQL = {
+	getAll: `SELECT * FROM answer_options`,
+	remove: `DELETE FROM answer_options WHERE id = $1 RETURNING *`,
+	create: `INSERT INTO answer_options (text, questions_id, thema_id) values ($1, $2, $3) RETURNING *`,
+	updateText: `UPDATE answer_options SET text = $1 WHERE id =$2 RETURNING *`,
+	updateType: `UPDATE answer_options SET type = $1 WHERE questions_id =$2 RETURNING *`
+}
+
+export const getAll = async (req, res) => {
+	try {
+		const resData = await db.query(SQL.getAll);
+		res.json(resData.rows);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Щось пішло не так. Спробуйте знову.',
+		});
+	}
+};
+
+export const remove = async (req, res) => {
+	try {
+		const id = req.params.id;
+		const resData = await db.query(SQL.remove, [id]);
+		const isDel = resData.rowCount;
+
+		if (isDel) {
+			// Отримання оновленої таблиці
+			const updatedAnswerList = await db.query(SQL.getAll);
+			const updatedAnswer = updatedAnswerList.rows;
+			return res.json({
+				success: true,
+				answerOptions: updatedAnswer,
+			})
+		}
+		else {
+			return res.status(404).json({
+				message: 'Даних не знайдено',
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Не вдалося отримати дані',
+		});
+	}
+};
+
+export const create = async (req, res) => {
+	try {
+		const { text, questions_id, thema_id } = req.body;
+
+		const newData = await db.query(SQL.create, [text, questions_id, thema_id]);
+		const data = newData.rows[0];
+		console.log(data);
+		res.json(data);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Щось пішло не так. Спробуйте знову',
+		});
+	}
+};
+export const updateText = async (req, res) => {
+	try {
+		const id = req.params.id;
+		const { text } = req.body;
+		const upadateData =
+			await db.query(SQL.updateText, [text, id]);
+		const data = upadateData.rows[0];
+
+		const isUpdate = upadateData.rowCount;
+
+		if (isUpdate) {
+			// Отримання оновленої таблиці
+			return res.json({
+				success: true,
+				data,
+			});
+		}
+		else {
+			return res.status(404).json({
+				message: 'Даних не знайдено',
+			});
+		}
+
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Не вдалося обновити форму',
+		});
+	}
+};
+
+export const updateType = async (req, res) => {
+	try {
+		const { type, questions_id } = req.body;
+		const upadateData =
+			await db.query(SQL.updateType, [type, questions_id]);
+		const data = upadateData.rows[0];
+		console.log(data);
+
+		const isUpdate = upadateData.rowCount;
+
+		if (isUpdate) {
+			// Отримання оновленої таблиці
+			return res.json({
+				success: true,
+				data,
+			});
+		}
+		else {
+			return res.status(404).json({
+				message: 'Даних не знайдено',
+			});
+		}
+
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Не вдалося обновити тип',
+		});
+	}
+};
+
+
+//========================================================================================================================================================
+// export const getOne = async (req, res) => {
+// 	try {
+// 		const postId = req.params.id;
+
+// 		PostModel.findOneAndUpdate(
+// 			{
+// 				_id: postId,
+// 			},
+// 			{
+// 				$inc: { viewsCount: 1 },
+// 			},
+// 			{
+// 				returnDocument: 'after',
+// 			},
+// 			(err, doc) => {
+// 				if (err) {
+// 					console.log(err);
+// 					return res.status(500).json({
+// 						message: 'Не вдалося вернути статті',
+// 					});
+// 				}
+
+// 				if (!doc) {
+// 					return res.status(404).json({
+// 						message: 'Стаття не знайдена',
+// 					});
+// 				}
+
+// 				res.json(doc);
+// 			},
+// 		).populate('user');
+// 	} catch (err) {
+// 		console.log(err);
+// 		res.status(500).json({
+// 			message: 'Не вдалося отримати статті',
+// 		});
+// 	}
+// };
+// export const getThree = async (req, res) => {
+// 	try {
+// 		const posts = await db.query(`SELECT * FROM form ORDER BY id LIMIT 3`);
+// 		res.json(posts.rows.reverse());
+// 	} catch (err) {
+// 		console.log(err);
+// 		res.status(500).json({
+// 			message: 'Щось пішло не так. Спробуйте знову.',
+// 		});
+// 	}
+// };

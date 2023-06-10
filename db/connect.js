@@ -1,11 +1,11 @@
 import Pool from "pg-pool";
 
 const pool = new Pool({
-	user: "andriy",
-	password: '12233221',
+	user: "form_user",
+	password: '1223',
 	host: 'localhost',
 	port: 5432,
-	database: "school-base"
+	database: "forms"
 })
 pool.connect(error => {
 	if (error) {

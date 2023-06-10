@@ -1,35 +1,28 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import db from '../db/connect.js';
-import * as dotenv from 'dotenv';
-dotenv.config()
-// import nodemailer from 'nodemailer';
-// const transporter = nodemailer.createTransport({
-// 	service: 'gmail',
-// 	auth: {
-// 		user: process.env.EMAIL,
-// 		pass: process.env.PASSWORD
-
-// 	}
-// })
-// const mailOptions = {
-// 	from: 'Коп.Гімназія  <prob.robota@gmail.com>',
-// 	to: req.body.email,
-// 	subject: 'Код для авторизація на сайті школи',
-// 	html: '<h1>Код: 112233</h1>',
-// }
-// transporter.sendMail(mailOptions, err => console.log(err));
-
 
 export const register = async (req, res) => {
 	try {
-		const key = req.body.key;
-		if (key === process.env.KEY) {
+		const { name, email, key } = req.body;
+
+		const resAuthData = await db.query(`SELECT COUNT(*) AS count FROM auth WHERE "email" = '${email}'`);
+
+		if (resAuthData.rows[0].count > 0) {
+			return res.status(404).json({
+				message: 'Введіть іншу пошту',
+			});
+		}
+
+		const secretKey = await db.query(`SELECT * FROM "key" WHERE name = $1`, [key]);
+
+
+		if (secretKey) {
 			const password = req.body.password;
 			const salt = await bcrypt.genSalt(10);
-			const hash = await bcrypt.hash(password, salt);
-			const { fullName, email } = req.body;
-			const newAuthUser = await db.query(`INSERT INTO auth ("fullName", email, "passwordHash") values ($1, $2, $3) RETURNING *`, [fullName, email, hash]);
+			const hashPass = await bcrypt.hash(password, salt);
+
+			const newAuthUser = await db.query(`INSERT INTO auth ("name", "email", "password_hash", "key_id") values ($1, $2, $3, $4) RETURNING *`, [name, email, hashPass, secretKey.rows[0].id]);
 			const auth = newAuthUser.rows[0];
 			console.log(auth);
 
@@ -51,25 +44,22 @@ export const register = async (req, res) => {
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
-			message: 'Не вдалося зарейструватися',
+			message: 'Не вдалося зарейструватися. Спробуйте пізніше.',
 		});
 	}
 };
 
 export const login = async (req, res) => {
 	try {
-
 		const resAuthData = await db.query(`SELECT * FROM auth WHERE email = $1`, [req.body.email]);
 		const user = resAuthData.rows[0];
-
-		console.log(user);
 
 		if (!user) {
 			return res.status(404).json({
 				message: 'Невірний логін або пароль',
 			});
 		}
-		const isValidPass = await bcrypt.compare(req.body.password, user.passwordHash);
+		const isValidPass = await bcrypt.compare(req.body.password, user.password_hash);
 
 		if (!isValidPass) {
 			return res.status(400).json({
@@ -113,7 +103,7 @@ export const getMe = async (req, res) => {
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
-			message: 'Немяє доступу',
+			message: 'Немає доступу',
 		});
 	}
 };

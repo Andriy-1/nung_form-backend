@@ -1,0 +1,157 @@
+-- -- Active: 1685777482705@@127.0.0.1@5432@forms@public
+-- --! TABLE key
+-- CREATE TABLE
+--     key(
+--         id SERIAL PRIMARY KEY,
+--         create_time DATE,
+--         name VARCHAR(255)
+--     );
+
+-- --! TABLE auth
+-- CREATE TABLE
+--     auth(
+--         id SERIAL PRIMARY KEY,
+--         email VARCHAR(255),
+--         name VARCHAR(255),
+--         password_hash VARCHAR(255),
+--         key_id INTEGER REFERENCES key(id)
+--     );
+
+-- --! TABLE specialty
+-- CREATE TABLE
+--     specialty(
+--         id SERIAL PRIMARY KEY,
+--         name VARCHAR(255)
+
+--     );
+
+-- --! TABLE status
+-- CREATE TABLE
+--     status(
+--         id SERIAL PRIMARY KEY,
+--         name VARCHAR(255)
+
+--     );
+
+-- --! TABLE kurs
+-- CREATE TABLE
+--     kurs(
+--         id SERIAL PRIMARY KEY,
+--         name VARCHAR(255)
+
+--     );
+
+-- --! TABLE thema
+-- CREATE TABLE
+--     thema(
+--         id SERIAL PRIMARY KEY,
+--         title VARCHAR(500),
+--         description VARCHAR(1000)
+
+--     );
+
+-- --! TABLE form
+-- CREATE TABLE
+--     form(
+--         id SERIAL PRIMARY KEY,
+--         name VARCHAR(255),
+-- 		create_dt DATE,
+--         auth_id INTEGER REFERENCES auth(id),
+--         thema_id INTEGER REFERENCES thema(id)
+--     );
+
+-- --! TABLE questions
+-- CREATE TABLE
+--     questions(
+--         id SERIAL PRIMARY KEY,
+--         text VARCHAR(255),
+--         mandatory BOOLEAN,
+--         thema_id INTEGER REFERENCES thema(id)
+--     );
+
+-- --! TABLE answer_options
+-- CREATE TABLE
+--     answer_options(
+--         id SERIAL PRIMARY KEY,
+--         text VARCHAR(255),
+-- 		type VARCHAR(50) CHECK (type IN ('radio', 'checkbox', 'select')) DEFAULT 'checkbox',
+--         questions_id INTEGER REFERENCES questions(id),
+--         thema_id INTEGER REFERENCES thema(id)
+--     );
+
+-- --! TABLE responses
+-- CREATE TABLE
+--     responses(
+--         id SERIAL PRIMARY KEY,
+--         -- text VARCHAR(255),
+-- 		specialty_id INTEGER REFERENCES specialty(id),
+-- 		status_id INTEGER REFERENCES status(id),
+-- 		kurs_id INTEGER REFERENCES kurs(id),
+--         questions_id INTEGER REFERENCES questions(id),
+--         answer_options_id INTEGER REFERENCES answer_options(id),
+--         thema_id INTEGER REFERENCES thema(id)
+--     );
+
+-- -- / / = = = = = = = = = = = = = = = = = = = = = = 
+-- COMMENT ON TABLE table_name IS '';
+
+-- COMMENT ON COLUMN table_name.name IS '';
+
+-- INSERT INTO "key" (name)
+-- VALUES (
+--         '4D92199549E0F2EF009B4160F3582E5528A11A45017F3EF8'
+--     );
+-- INSERT INTO "kurs" (name)
+-- VALUES (
+--         '6 курс'
+--     );
+-- INSERT INTO "status" (name)
+-- VALUES (
+--         'Роботодавець'
+--     );
+
+-- INSERT INTO "specialty" (name)
+-- VALUES (
+--         '(281) Публічне управління та адміністрування'
+--     );
+
+
+-- INSERT INTO
+--     "auth" (
+--         email,
+--         name,
+--         password_hash,
+--         key_id
+--     )
+-- VALUES (
+--         '112@gmail.com',
+--         'Ands',
+--         '4D92199e2',
+--         '2'
+--     );
+
+-- SELECT * FROM auth aa;
+
+-- SELECT aa. * FROM auth aa;
+
+-- SELECT aa. * FROM auth aa left JOIN "key" a on a.id=aa.key_id;
+
+-- SELECT * FROM questions
+-- LEFT JOIN answer_options ON questions.thema_id = answer_options.thema_id;
+
+// import nodemailer from 'nodemailer';
+// const transporter = nodemailer.createTransport({
+// 	service: 'gmail',
+// 	auth: {
+// 		user: process.env.EMAIL,
+// 		pass: process.env.PASSWORD
+
+// 	}
+// })
+// const mailOptions = {
+// 	from: 'Коп.Гімназія  <prob.robota@gmail.com>',
+// 	to: req.body.email,
+// 	subject: 'Код для авторизація на сайті школи',
+// 	html: '<h1>Код: 112233</h1>',
+// }
+// transporter.sendMail(mailOptions, err => console.log(err));

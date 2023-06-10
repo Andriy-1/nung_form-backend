@@ -48,3 +48,5 @@ create TABLE gallery(
 	id SERIAL PRIMARY KEY,
 	"file" VARCHAR(255) NOT NULL
 );
+
+
